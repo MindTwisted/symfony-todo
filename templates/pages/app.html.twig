@@ -3,5 +3,13 @@
 {% block title %}App{% endblock %}
 
 {% block body %}
-<h1>App page</h1>
+<div class="jumbotron mt-3">
+    <h1 class="display-4">Welcome, {{ app.user.name }}</h1>
+    <p class="lead">This is application dashboard.</p>
+    <hr class="my-4">
+    <p>Currently you have 10 todos in 5 categories.</p>
+    <a class="btn btn-primary btn-lg" 
+        href="{{ path('categories_index') }}" 
+        role="button">View</a>
+</div>
 {% endblock %}
