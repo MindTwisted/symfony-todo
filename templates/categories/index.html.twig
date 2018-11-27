@@ -1,20 +1,39 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello {{ controller_name }}!{% endblock %}
+{% block title %}App Categories{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <h1 class="mt-5 mb-4">Categories</h1>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'src/Controller/CategoriesController.php'|file_link(0) }}">src/Controller/CategoriesController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'templates/categories/index.html.twig'|file_link(0) }}">templates/categories/index.html.twig</a></code></li>
+    <ul class="list-group">
+        {% for category in pagination if category %}
+            <li class="list-group-item d-flex justify-content-between">
+                <span>
+                    <a href="{{ path('categories_show', {'id': category.id}) }}">
+                        {{ category.name }} 
+                    </a>
+                    (todos: {{ category.todos.count }})
+                </span>
+                <form action="{{ path('categories_delete', {'id': category.id}) }}" 
+                    method="POST">
+                    <button type="submit" 
+                        class="btn btn-danger btn-sm">Delete</button>
+                </form> 
+            </li>
+        {% else %}
+            <div class="text-center">There are no categories yet.</div>
+        {% endfor %}
     </ul>
-</div>
+
+    <div class="mt-4 mb-4">
+        {{ knp_pagination_render(pagination) }}
+    </div>
+
+    {{ form_start(form) }}
+        <h4 class="mt-5 mb-3">Add new category</h4>
+
+        {{ form_row(form.name) }}
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    {{ form_end(form) }}
 {% endblock %}
