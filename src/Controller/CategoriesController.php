@@ -17,6 +17,7 @@ class CategoriesController extends Controller
      */
     public function index(Request $request)
     {
+        $user = $this->getUser();
         $category = new Category();
 
         $form = $this->createForm(CategoryType::class, $category);
@@ -24,6 +25,8 @@ class CategoriesController extends Controller
 
         if ($form->isSubmitted() && $form->isValid()) 
         {
+            $category->setUser($user);
+
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($category);
             $entityManager->flush();
@@ -33,7 +36,7 @@ class CategoriesController extends Controller
 
         $categories = $this->getDoctrine()
             ->getRepository(Category::class)
-            ->findAllJoinedToTodos();
+            ->findByUserJoinedToTodos($user->getId());
         
         $paginator  = $this->get('knp_paginator');
         $pagination = $paginator->paginate(
@@ -58,6 +61,7 @@ class CategoriesController extends Controller
     public function show($id, Request $request)
     {
         $todo = new Todo();
+        $user = $this->getUser();
 
         $form = $this->createForm(TodoType::class, $todo);
         $form->handleRequest($request);
@@ -65,12 +69,19 @@ class CategoriesController extends Controller
         $category = $this->getDoctrine()
             ->getRepository(Category::class)
             ->findOneBy([
-                'id' => $id
+                'id' => $id,
+                'user' => $user->getId()
             ]);
+
+        if (!$category)
+        {
+            return $this->redirectToRoute('categories_index');
+        }
 
         if ($form->isSubmitted() && $form->isValid()) 
         {
             $todo->setCategory($category);
+            $todo->setUser($user);
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($todo);
@@ -88,8 +99,21 @@ class CategoriesController extends Controller
     /**
      * @Route("/app/categories/{id}/delete", name="categories_delete", requirements={"id"="\d+"})
      */
-    public function delete(Category $category)
+    public function delete($id)
     {
+        $user = $this->getUser();
+        $category = $this->getDoctrine()
+            ->getRepository(Category::class)
+            ->findOneBy([
+                'id' => $id,
+                'user' => $user->getId()
+            ]);
+
+        if (!$category)
+        {
+            return $this->redirectToRoute('categories_index');
+        }
+
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->remove($category);
         $entityManager->flush();

@@ -19,11 +19,13 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    public function findAllJoinedToTodos()
+    public function findByUserJoinedToTodos($id)
     {
         return $this->createQueryBuilder('c')
             ->select('c, t')
             ->leftJoin('c.todos', 't')
+            ->andWhere('c.user = :id')
+            ->setParameter('id', $id)
             ->getQuery()
             ->getResult();
     }

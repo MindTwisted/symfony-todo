@@ -11,8 +11,21 @@ class TodosController extends AbstractController
     /**
      * @Route("/todos/{id}/mark-as-done", name="todos_markAsDone", requirements={"id"="\d+"})
      */
-    public function markAsDone(Todo $todo)
+    public function markAsDone($id)
     {
+        $user = $this->getUser();
+        $todo = $this->getDoctrine()
+            ->getRepository(Todo::class)
+            ->findOneBy([
+                'id' => $id,
+                'user' => $user->getId()
+            ]);
+
+        if (!$todo)
+        {
+            return $this->redirectToRoute('categories_index');
+        }
+
         $category = $todo->getCategory();
         $todo->setIsDone(true);
 
@@ -26,8 +39,21 @@ class TodosController extends AbstractController
     /**
      * @Route("/todos/{id}/mark-as-undone", name="todos_markAsUndone", requirements={"id"="\d+"})
      */
-    public function markAsUndone(Todo $todo)
+    public function markAsUndone($id)
     {
+        $user = $this->getUser();
+        $todo = $this->getDoctrine()
+            ->getRepository(Todo::class)
+            ->findOneBy([
+                'id' => $id,
+                'user' => $user->getId()
+            ]);
+
+        if (!$todo)
+        {
+            return $this->redirectToRoute('categories_index');
+        }
+        
         $category = $todo->getCategory();
         $todo->setIsDone(false);
 

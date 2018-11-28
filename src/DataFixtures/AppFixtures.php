@@ -29,6 +29,7 @@ class AppFixtures extends Fixture
         {
             $category = new Category();
             $category->setName("Category $i");
+            $category->setUser($user);
             $manager->persist($category);
 
             for ($j = 1; $j <= 20; $j++)
@@ -37,6 +38,7 @@ class AppFixtures extends Fixture
                 $todo->setTitle("Todo $i-$j");
                 $todo->setBody("Default text");
                 $todo->setCategory($category);
+                $todo->setUser($user);
                 $manager->persist($todo);
             }
         }
