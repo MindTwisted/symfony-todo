@@ -4,10 +4,13 @@ namespace App\Controller\Api;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use App\Entity\User;
+use App\Service\Helper;
 
 class SecurityController extends AbstractController
 {
@@ -32,31 +35,39 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    // /**
-    //  * @Route("/register", name="register")
-    //  */
-    // public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
-    // {
-    //     $user = new User();
+    /**
+     * @Route("/api_register", name="api_register", methods={"POST"})
+     */
+    public function register(
+        Helper $helper,
+        Request $request, 
+        ValidatorInterface $validator, 
+        UserPasswordEncoderInterface $passwordEncoder
+    ): Response
+    {
+        $user = new User();
+        $user->setName((string) $request->get('name'));
+        $user->setEmail((string) $request->get('email'));
+        $user->setPassword((string) $request->get('password'));
+        $errors = $validator->validate($user);
 
-    //     $form = $this->createForm(UserType::class, $user);
-    //     $form->handleRequest($request);
+        if (count($errors) > 0) 
+        {
+            return new JsonResponse([
+                'message' => 'Provided data doesn\'t valid.',
+                'data' => $helper->violationsToArray($errors)
+            ], 422);
+        }
+        
+        $password = $passwordEncoder->encodePassword($user, $user->getPassword());
+        $user->setPassword($password);
 
-    //     if ($form->isSubmitted() && $form->isValid()) 
-    //     {
-    //         $password = $passwordEncoder->encodePassword($user, $user->getPassword());
-    //         $user->setPassword($password);
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($user);
+        $entityManager->flush();
 
-    //         $entityManager = $this->getDoctrine()->getManager();
-    //         $entityManager->persist($user);
-    //         $entityManager->flush();
-
-    //         return $this->redirectToRoute('login');
-    //     }
-
-    //     return $this->render(
-    //         'security/register.html.twig',
-    //         ['form' => $form->createView()]
-    //     );
-    // }
+        return new JsonResponse([
+            'message' => 'User was successfully registered.'
+        ]);
+    }
 }

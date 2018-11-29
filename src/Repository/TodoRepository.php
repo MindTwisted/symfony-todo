@@ -19,32 +19,43 @@ class TodoRepository extends ServiceEntityRepository
         parent::__construct($registry, Todo::class);
     }
 
-    // /**
-    //  * @return Todo[] Returns an array of Todo objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findByToArray(Array $criteria): Array
     {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('t.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $qb = $this->createQueryBuilder('t')
+            ->select('t');
 
-    /*
-    public function findOneBySomeField($value): ?Todo
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if (isset($criteria['categoryId']))
+        {
+            $qb = $qb->andWhere('t.category = :categoryId')->setParameter('categoryId', $criteria['categoryId']);
+        }
+
+        if (isset($criteria['userId']))
+        {
+            $qb = $qb->andWhere('t.user = :userId')->setParameter('userId', $criteria['userId']);
+        }
+
+        $qb = $qb->getQuery()->getArrayResult();
+
+        return $qb;
     }
-    */
+
+    public function findOneByToArray(Array $criteria): Array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->select('t');
+
+        if (isset($criteria['id']))
+        {
+            $qb = $qb->andWhere('t.id = :id')->setParameter('id', $criteria['id']);
+        }
+
+        if (isset($criteria['userId']))
+        {
+            $qb = $qb->andWhere('t.user = :userId')->setParameter('userId', $criteria['userId']);
+        }
+
+        $qb = $qb->setMaxResults(1)->getQuery()->getArrayResult();
+
+        return $qb;
+    }
 }

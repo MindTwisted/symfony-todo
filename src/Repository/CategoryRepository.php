@@ -19,7 +19,7 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    public function findByUserJoinedToTodos($id)
+    public function findByUserJoinedToTodos($id): Array
     {
         return $this->createQueryBuilder('c')
             ->select('c, t')
@@ -28,5 +28,40 @@ class CategoryRepository extends ServiceEntityRepository
             ->setParameter('id', $id)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findByToArray(Array $criteria): Array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->select('c');
+
+        if (isset($criteria['userId']))
+        {
+            $qb = $qb->andWhere('c.user = :userId')->setParameter('userId', $criteria['userId']);
+        }
+
+        $qb = $qb->getQuery()->getArrayResult();
+
+        return $qb;
+    }
+
+    public function findOneByToArray(Array $criteria): Array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->select('c');
+
+        if (isset($criteria['id']))
+        {
+            $qb = $qb->andWhere('c.id = :id')->setParameter('id', $criteria['id']);
+        }
+
+        if (isset($criteria['userId']))
+        {
+            $qb = $qb->andWhere('c.user = :userId')->setParameter('userId', $criteria['userId']);
+        }
+
+        $qb = $qb->setMaxResults(1)->getQuery()->getArrayResult();
+
+        return $qb;
     }
 }
